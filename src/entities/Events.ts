@@ -8,6 +8,7 @@ class Event {
         public date: Date,
         public description: string,
         public location: Location,
+        public flyers: string[],
         public banner: string,
         public coupuns: string[],
         public participants: User[],

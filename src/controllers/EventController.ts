@@ -1,11 +1,12 @@
 import { NextFunction, Request, Response } from "express";
 import { EventUseCase } from "../useCases/EventUseCase";
+import { Event } from "../entities/Events";
 
 class EventController {
     constructor(private eventUseCase: EventUseCase) { }
 
     async create(req: Request, res: Response, next: NextFunction) {
-        const eventData = req.body;
+        const eventData: Event = req.body;
 
         try {
             await this.eventUseCase.create(eventData);
