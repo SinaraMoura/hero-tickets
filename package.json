@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
+    "test": "jest --forceExit",
     "dev": "tsx watch ./src/main.ts"
   },
   "engines": {
@@ -16,12 +16,15 @@
   "dependencies": {
     "-": "^0.0.1",
     "D": "^1.0.0",
+    "axios": "^1.4.0",
     "express": "^4.18.2",
     "mongoose": "^7.4.2",
     "multer": "^1.4.5-lts.1",
     "ts-jest": "^29.1.1"
   },
   "devDependencies": {
+    "@types/axios": "^0.14.0",
+    "@types/babel__core": "^7.20.1",
     "@types/express": "^4.17.17",
     "@types/jest": "^29.5.3",
     "@types/multer": "^1.4.7",

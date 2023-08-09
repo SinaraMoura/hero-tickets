@@ -7,15 +7,16 @@ const app = new App().app
 describe('Event test', () => {
     it('/POST', async () => {
         const event = {
-            title: 'Henrique e Juliano',
+            title: 'Rio negro e Solimões',
             price: [{
                 sector: 'pista',
                 amount: '20'
             }],
+            categories: ['Show'],
             description: 'Evento descrição',
-            city: 'Brasília',
-            location: { latitude: '-15.7835548', longitude: '-47.9018195' },
-            coupuns: [],
+            city: 'Rajadinha',
+            location: { latitude: '-15.7439956', longitude: '-47.694827' },
+            coupons: [],
             date: new Date(),
             participants: [],
 
@@ -24,9 +25,11 @@ describe('Event test', () => {
             .post('/events')
             .field('title', event.title)
             .field('description', event.description)
+            .field('categories', event.categories)
             .field('city', event.city)
+            .field('date', event.date.toISOString())
             .field('participants', event.participants)
-            .field('coupons', event.coupuns)
+            .field('coupons', event.coupons)
             .field('location[latitude]', event.location.latitude)
             .field('location[longitude]', event.location.longitude)
             .field('price[amount]', event.price[0].amount)
