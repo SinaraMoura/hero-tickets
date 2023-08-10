@@ -43,14 +43,58 @@ class EventController {
     }
     async findEventByCategory(req: Request, res: Response, next: NextFunction) {
         const { category } = req.params;
+        console.log(
+            '🚀 ~ file: EventController.ts:54 ~ EventController ~ category:',
+            category,
+        );
         try {
-            const eventCategory = await this.eventUseCase.findEventByCategory(
-                String(category)
+            const events = await this.eventUseCase.findEventByCategory(
+                String(category),
             );
-            console.log("🚀 ~ file: EventController.ts:50 ~ EventController ~ findEventByCategory ~ eventCategory:", eventCategory)
-            return res.status(200).json(eventCategory);
+            return res.status(200).json(events);
+        } catch (error) {
+            next(error);
+        }
+    }
+    async findEventByName(req: Request, res: Response, next: NextFunction) {
+        const { name } = req.query;
+        try {
+            const events = await this.eventUseCase.findEventByName(
+                String(name)
+            );
+            console.log("🚀 ~ file: EventController.ts:50 ~ EventController ~ findEventByCategory ~ eventCategory:", events)
+            return res.status(200).json(events);
         } catch (error) {
             next(error)
+        }
+    }
+    async findEventsById(
+        request: Request,
+        response: Response,
+        next: NextFunction,
+    ) {
+        const { id } = request.params;
+
+        try {
+            const events = await this.eventUseCase.findEventById(String(id));
+            return response.status(200).json(events);
+        } catch (error) {
+            next(error);
+        }
+    }
+    async addParticipant(
+        request: Request,
+        response: Response,
+        next: NextFunction,
+    ) {
+        const { name, email } = request.body;
+        const { id } = request.params;
+
+        try {
+            const events = await this.eventUseCase.addParticipant(id, name, email);
+            return response.status(200).json(events);
+        } catch (error) {
+            next(error);
         }
     }
 }
