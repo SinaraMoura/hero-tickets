@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 import { App } from "../app";
-import { Event } from "../entities/Events";
+import { Event } from "../entities/Event";
 import request from "supertest";
 import { EventUseCase } from "../useCases/EventUseCase";
 
@@ -108,7 +108,8 @@ const eventRepository = {
     findEventsByCategory: jest.fn(),
     findEventsByName: jest.fn(),
     findEventById: jest.fn(),
-    updateEvent: jest.fn()
+    updateEvent: jest.fn(),
+    findMainEvents: jest.fn()
 }
 const eventUseCase = new EventUseCase(eventRepository);
 
@@ -122,6 +123,7 @@ const event: Event = {
         latitude: '-19.8658659',
         longitude: '-43.9737064',
     },
+    formattedAddress: '',
     coupons: [],
     date: new Date(),
     participantes: [],

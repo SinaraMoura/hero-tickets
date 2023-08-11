@@ -1,8 +1,8 @@
-import { Router } from "express"
-import { EventController } from "../controllers/EventController";
-import { EventRepositoryMongoose } from "../repositories/EventRepositoryMongoose";
-import { EventUseCase } from "../useCases/EventUseCase";
-import { upload } from "../infra/multer";
+import { Router } from 'express';
+import { EventController } from '../controllers/EventController';
+import { upload } from '../infra/multer';
+import { EventRepositoryMongoose } from '../repositories/EventRepositoryMongoose';
+import { EventUseCase } from '../useCases/EventUseCase';
 
 class EventRoutes {
     public router: Router;
@@ -13,7 +13,6 @@ class EventRoutes {
         const eventUseCase = new EventUseCase(eventRepository);
         this.eventController = new EventController(eventUseCase);
         this.initRoutes();
-
     }
     initRoutes() {
         this.router.post(
@@ -21,32 +20,40 @@ class EventRoutes {
             upload.fields([
                 {
                     name: 'banner',
-                    maxCount: 1
+                    maxCount: 1,
                 },
                 {
                     name: 'flyers',
-                    maxCount: 3
-                }
+                    maxCount: 3,
+                },
             ]),
-            this.eventController.create.bind(this.eventController)
+            this.eventController.create.bind(this.eventController),
         );
         this.router.get(
             '/',
-            this.eventController.findEventByLocation.bind(this.eventController)
-        )
+            this.eventController.findEventByLocation.bind(this.eventController),
+        );
+        this.router.get(
+            '/filter',
+            this.eventController.filterEvents.bind(this.eventController),
+        );
         this.router.get(
             '/:id',
-            this.eventController.findEventsById.bind(this.eventController)
-        )
-        this.router.post(
-            "/:id/participants",
-            this.eventController.addParticipant.bind(this.eventController)
-        )
+            this.eventController.findEventsById.bind(this.eventController),
+        );
         this.router.get(
-            "/category/:category",
-            this.eventController.findEventByCategory.bind(this.eventController)
-        )
-
+            '/category/:category',
+            this.eventController.findEventsByCategory.bind(this.eventController),
+        );
+        this.router.get(
+            '/main',
+            this.eventController.findMainEvents.bind(this.eventController),
+        );
+        this.router.post(
+            '/:id/participants',
+            this.eventController.addParticipant.bind(this.eventController),
+        );
     }
 }
-export { EventRoutes }
+
+export { EventRoutes };

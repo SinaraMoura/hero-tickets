@@ -1,13 +1,17 @@
-import { NextFunction, Request, Response } from "express";
-import { EventUseCase } from "../useCases/EventUseCase";
-import { Event } from "../entities/Events";
+import { NextFunction, Request, Response } from 'express';
+import { Event } from '../entities/Event';
+import { EventUseCase } from '../useCases/EventUseCase';
 
 class EventController {
     constructor(private eventUseCase: EventUseCase) { }
+    async create(request: Request, response: Response, next: NextFunction) {
+        let eventData: Event = request.body;
+        console.log(
+            '🚀 ~ file: EventController.ts:9 ~ EventController ~ create ~ eventData:',
+            eventData,
+        );
 
-    async create(req: Request, res: Response, next: NextFunction) {
-        let eventData: Event = req.body;
-        const files = req.files as any;
+        const files = request.files as any;
 
         if (files) {
             const banner = files.banner[0];
@@ -16,56 +20,96 @@ class EventController {
             eventData = {
                 ...eventData,
                 banner: banner.filename,
-                flyers: flyers.map((flye: any) => flye.filename)
-            }
+                flyers: flyers.map((flyer: any) => flyer.filename),
+            };
         }
 
         try {
             await this.eventUseCase.create(eventData);
-            return res.status(201).json({ message: 'Evento criado com sucesso' });
+            return response
+                .status(201)
+                .json({ message: 'Evento criado com sucesso.' });
         } catch (error) {
             next(error);
         }
     }
-
-    async findEventByLocation(req: Request, res: Response, next: NextFunction) {
-
-        const { latitude, longitude } = req.query;
+    async findEventByLocation(
+        request: Request,
+        response: Response,
+        next: NextFunction,
+    ) {
+        const { latitude, longitude } = request.query;
         try {
             const events = await this.eventUseCase.findEventByLocation(
                 String(latitude),
-                String(longitude)
+                String(longitude),
             );
-            return res.status(200).json(events);
+            return response.status(200).json(events);
         } catch (error) {
-            next(error)
+            next(error);
         }
     }
-    async findEventByCategory(req: Request, res: Response, next: NextFunction) {
-        const { category } = req.params;
+    async filterEvents(request: Request, response: Response, next: NextFunction) {
+        const { latitude, longitude, name, date, category, radius, price } =
+            request.query;
+        try {
+            const events = await this.eventUseCase.filterEvents({
+                latitude: Number(latitude),
+                longitude: Number(longitude),
+                name: String(name),
+                date: String(date),
+                category: String(category),
+                radius: Number(radius),
+                price: Number(price),
+            });
+            return response.status(200).json(events);
+        } catch (error) {
+            next(error);
+        }
+    }
+    async findEventsByCategory(
+        request: Request,
+        response: Response,
+        next: NextFunction,
+    ) {
+        const { category } = request.params;
         console.log(
             '🚀 ~ file: EventController.ts:54 ~ EventController ~ category:',
             category,
         );
         try {
-            const events = await this.eventUseCase.findEventByCategory(
+            const events = await this.eventUseCase.findEventsByCategory(
                 String(category),
             );
-            return res.status(200).json(events);
+            return response.status(200).json(events);
         } catch (error) {
             next(error);
         }
     }
-    async findEventByName(req: Request, res: Response, next: NextFunction) {
-        const { name } = req.query;
+    async findMainEvents(
+        request: Request,
+        response: Response,
+        next: NextFunction,
+    ) {
         try {
-            const events = await this.eventUseCase.findEventByName(
-                String(name)
-            );
-            console.log("🚀 ~ file: EventController.ts:50 ~ EventController ~ findEventByCategory ~ eventCategory:", events)
-            return res.status(200).json(events);
+            const events = await this.eventUseCase.findEventsMain();
+            return response.status(200).json(events);
         } catch (error) {
-            next(error)
+            next(error);
+        }
+    }
+    async findEventsByName(
+        request: Request,
+        response: Response,
+        next: NextFunction,
+    ) {
+        const { name } = request.query;
+
+        try {
+            const events = await this.eventUseCase.findEventsByName(String(name));
+            return response.status(200).json(events);
+        } catch (error) {
+            next(error);
         }
     }
     async findEventsById(
@@ -76,7 +120,7 @@ class EventController {
         const { id } = request.params;
 
         try {
-            const events = await this.eventUseCase.findEventById(String(id));
+            const events = await this.eventUseCase.findEventsById(String(id));
             return response.status(200).json(events);
         } catch (error) {
             next(error);
@@ -98,4 +142,5 @@ class EventController {
         }
     }
 }
-export { EventController }
+
+export { EventController };

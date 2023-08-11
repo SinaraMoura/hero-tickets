@@ -1,71 +1,112 @@
-import { Event } from "../entities/Events";
-import { HttpException } from "../interfaces/HttpException";
-import { EventRepository } from "../repositories/EventRepository";
 import axios from 'axios';
-import { UserRepository } from "../repositories/UserRepository";
-import { UserRepositoryMongoose } from "../repositories/UserRepositoryMongoose";
+import { Event } from '../entities/Event';
+import { HttpException } from '../interfaces/HttpException';
+import { EventRepository } from '../repositories/EventRepository';
+import { UserRepositoryMongoose } from '../repositories/UserRepositoryMongoose';
+export interface IFilterProps {
+    latitude: number;
+    longitude: number;
+    name: string;
+    date: string;
+    category: string;
+    radius: number;
+    price: number;
+}
 class EventUseCase {
-    constructor(
-        private eventRepository: EventRepository
-    ) { }
+    constructor(private eventRepository: EventRepository) { }
 
     async create(eventData: Event) {
-        if (!eventData.banner) throw new HttpException(400, "Banner is required");
-        if (!eventData.flyers) throw new HttpException(400, "Flyer is required");
-        if (!eventData.location) throw new HttpException(400, "Location is required");
-        if (!eventData.date) throw new HttpException(400, "Date is required");
+        if (!eventData.banner) {
+            throw new HttpException(400, 'Banner is required');
+        }
+        if (!eventData.flyers) throw new HttpException(400, 'Flyers is required');
+        if (!eventData.date) throw new HttpException(400, 'Date is required');
 
-        const verifyEvent = await this.eventRepository.findByLocationAndDate(eventData.location, eventData.date);
-        if (verifyEvent) throw new HttpException(400, "Event already exists");
+        if (!eventData.location)
+            throw new HttpException(400, 'Location is required');
 
-        const cityName = await this.getCityNameCoordinates(
-            eventData.location.latitude,
-            eventData.location.longitude
+        //verificar se ja existe um evento no mesmo local e horario
+        const verifyEvent = await this.eventRepository.findByLocationAndDate(
+            eventData.location,
+            eventData.date,
         );
+        if (verifyEvent) throw new HttpException(400, 'Event already exists');
 
+        const cityName = await this.getCityNameByCoordinates(
+            eventData.location.latitude,
+            eventData.location.longitude,
+        );
         eventData = {
             ...eventData,
-            city: cityName
-        }
+            city: cityName.cityName,
+            formattedAddress: cityName.formattedAddress,
+        };
 
         const result = await this.eventRepository.add(eventData);
-        return result
+        return result;
     }
-    async findEventById(id: string) {
-        if (!id) throw new HttpException(400, 'Id is required');
-        const events = await this.eventRepository.findEventById(id);
 
-        return events;
-    }
     async findEventByLocation(latitude: string, longitude: string) {
-        const cityName = await this.getCityNameCoordinates(
-            latitude,
-            longitude
-        );
-        const findEventsByCity = await this.eventRepository.findEventsByCity(cityName);
+        const cityName = await this.getCityNameByCoordinates(latitude, longitude);
 
-        const eventWithRadius = findEventsByCity.filter(event => {
+        const findEventsByCity = await this.eventRepository.findEventsByCity(
+            cityName.cityName,
+        );
+
+        const eventWithRadius = findEventsByCity.filter((event) => {
             const distance = this.calculateDistance(
                 Number(latitude),
                 Number(longitude),
                 Number(event.location.latitude),
-                Number(event.location.longitude)
-            )
-            return distance <= 3;
-        })
+                Number(event.location.longitude),
+            );
+            return distance <= 100;
+        });
+
         return eventWithRadius;
-
     }
-    async findEventByCategory(category: string) {
-        if (!category) throw new HttpException(400, "Category is required");
-
+    async findEventsByCategory(category: string) {
+        if (!category) throw new HttpException(400, 'Category is required');
         const events = await this.eventRepository.findEventsByCategory(category);
+
         return events;
     }
-    async findEventByName(name: string) {
-        if (!name) throw new HttpException(400, "Name is required");
+    async filterEvents({
+        latitude,
+        longitude,
+        name,
+        date,
+        category,
+        radius,
+        price,
+    }: IFilterProps) {
+        const events = await this.eventRepository.findEventsByFilter({
+            latitude,
+            longitude,
+            name,
+            date,
+            category,
+            radius,
+            price,
+        });
 
+        return events;
+    }
+    async findEventsMain() {
+        const events = await this.eventRepository.findEventsMain(new Date());
+
+        return events;
+    }
+    async findEventsByName(name: string) {
+        if (!name) throw new HttpException(400, 'Name is required');
         const events = await this.eventRepository.findEventsByName(name);
+
+        return events;
+    }
+    async findEventsById(id: string) {
+        if (!id) throw new HttpException(400, 'Id is required');
+        const events = await this.eventRepository.findEventById(id);
+
         return events;
     }
     async addParticipant(id: string, name: string, email: string) {
@@ -78,31 +119,27 @@ class EventUseCase {
             name,
             email,
         };
-
         let user: any = {};
         const verifyIsUserExists = await userRepository.verifyIsUserExists(email);
-
         if (!verifyIsUserExists) {
             user = await userRepository.add(participant);
         } else {
             user = verifyIsUserExists;
         }
-
-        if (event.participantes.includes(user._id))
+        if (event.participants.includes(user._id))
             throw new HttpException(400, 'User already exists');
 
-        event.participantes.push(user._id);
+        event.participants.push(user._id);
 
-        const updateEvent = await this.eventRepository.updateEvent(event, id);
+        const updateEvent = await this.eventRepository.update(event, id);
         console.log(
             '🚀 ~ file: EventUseCase.ts:91 ~ EventUseCase ~ addParticipant ~ updateEvent:',
             updateEvent,
         );
         return event;
-
-
     }
-    private async getCityNameCoordinates(latitude: string, longitude: string) {
+
+    private async getCityNameByCoordinates(latitude: string, longitude: string) {
         try {
             const response = await axios.get(
                 `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=AIzaSyAhKk5549E8oy5zs-cxAqvy3_j3jDQJoBo`,
@@ -115,12 +152,16 @@ class EventUseCase {
                         type.types.includes('administrative_area_level_2') &&
                         type.types.includes('political'),
                 );
-                return cityType.long_name;
-            }
+                const formattedAddress = response.data.results[0].formatted_address;
 
-            throw new HttpException(404, "City not found");
+                return {
+                    cityName: cityType.long_name,
+                    formattedAddress,
+                };
+            }
+            throw new HttpException(404, 'City not found');
         } catch (error) {
-            throw new HttpException(401, "Error request city name")
+            throw new HttpException(401, 'Error request city name');
         }
     }
     private calculateDistance(
@@ -146,4 +187,5 @@ class EventUseCase {
         return deg * (Math.PI / 180);
     }
 }
-export { EventUseCase }
+
+export { EventUseCase };

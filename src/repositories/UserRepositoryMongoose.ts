@@ -27,5 +27,4 @@ class UserRepositoryMongoose implements UserRepository {
         return result ? result.toObject() : undefined;
     }
 }
-
 export { UserRepositoryMongoose };
