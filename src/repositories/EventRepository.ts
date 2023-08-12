@@ -2,7 +2,7 @@ import { Event } from '../entities/Event';
 import { Location } from '../entities/Location';
 import { IFilterProps } from '../useCases/EventUseCase';
 
-interface EventRepository {
+export interface EventRepository {
     add(event: Event): Promise<Event>;
     findByLocationAndDate(
         location: Location,
@@ -24,5 +24,3 @@ interface EventRepository {
     findEventById(id: string): Promise<Event | undefined>;
     update(event: Event, id: string): Promise<any>;
 }
-
-export { EventRepository };

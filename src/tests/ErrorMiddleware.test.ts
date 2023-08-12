@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express"
-import errorMiddleware from "../middlewares/error.middlewares"
+import { errorMiddleware } from "../middlewares/error.middlewares"
 import { HttpException } from "../interfaces/HttpException"
 
 describe("Error Middleware", () => {
