@@ -41,8 +41,10 @@ class EventUseCase {
             city: cityName.cityName,
             formattedAddress: cityName.formattedAddress,
         };
+        console.log("🚀 ~ file: EventUseCase.ts:41 ~ EventUseCase ~ create ~ eventData:", eventData)
 
         const result = await this.eventRepository.add(eventData);
+        console.log("🚀 ~ file: EventUseCase.ts:46 ~ EventUseCase ~ create ~ result:", result)
         return result;
     }
 
@@ -94,7 +96,7 @@ class EventUseCase {
     }
     async findEventsMain() {
         const events = await this.eventRepository.findEventsMain(new Date());
-
+        console.log("🚀 ~ file: EventUseCase.ts:97 ~ EventUseCase ~ findEventsMain ~ events:", events)
         return events;
     }
     async findEventsByName(name: string) {

@@ -46,6 +46,10 @@ class EventRoutes {
             this.eventController.findEventsByCategory.bind(this.eventController),
         );
         this.router.get(
+            '/title',
+            this.eventController.findEventsByName.bind(this.eventController),
+        );
+        this.router.get(
             '/main',
             this.eventController.findMainEvents.bind(this.eventController),
         );

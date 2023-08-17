@@ -6,10 +6,7 @@ class EventController {
     constructor(private eventUseCase: EventUseCase) { }
     async create(request: Request, response: Response, next: NextFunction) {
         let eventData: Event = request.body;
-        console.log(
-            '🚀 ~ file: EventController.ts:9 ~ EventController ~ create ~ eventData:',
-            eventData,
-        );
+
 
         const files = request.files as any;
 
@@ -22,10 +19,14 @@ class EventController {
                 banner: banner.filename,
                 flyers: flyers.map((flyer: any) => flyer.filename),
             };
+            console.log("🚀 ~ file: EventController.ts:21 ~ EventController ~ create ~ eventData:", eventData)
+
         }
 
         try {
             await this.eventUseCase.create(eventData);
+            console.log("🚀 ~ file: EventController.ts:32 ~ EventController ~ create ~ response:", response)
+
             return response
                 .status(201)
                 .json({ message: 'Evento criado com sucesso.' });
@@ -93,6 +94,7 @@ class EventController {
     ) {
         try {
             const events = await this.eventUseCase.findEventsMain();
+            console.log("🚀 ~ file: EventController.ts:96 ~ EventController ~ events:", events)
             return response.status(200).json(events);
         } catch (error) {
             next(error);
@@ -107,6 +109,7 @@ class EventController {
 
         try {
             const events = await this.eventUseCase.findEventsByName(String(name));
+            console.log("🚀 ~ file: EventController.ts:110 ~ EventController ~ events:", events)
             return response.status(200).json(events);
         } catch (error) {
             next(error);

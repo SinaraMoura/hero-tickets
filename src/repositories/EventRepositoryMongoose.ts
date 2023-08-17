@@ -38,9 +38,11 @@ const EventModel = mongoose.model('Event', eventSchema);
 
 class EventRepositoryMongoose implements EventRepository {
     async add(event: Event): Promise<Event> {
+
         const eventModel = new EventModel(event);
 
         await eventModel.save();
+        console.log("🚀 ~ file: EventRepositoryMongoose.ts:41 ~ EventRepositoryMongoose ~ add ~ event:", event)
         return event;
     }
     async findByLocationAndDate(
@@ -69,11 +71,11 @@ class EventRepositoryMongoose implements EventRepository {
     async findEventsMain(date: Date): Promise<Event[]> {
         const endDate = new Date(date);
         endDate.setMonth(endDate.getMonth() + 1);
+
         const findEvent = await EventModel.find({
-            date: { $gte: date, $lt: endDate },
-        })
-            .limit(4)
-            .exec();
+            date
+            // date: { $gte: date, $lt: endDate },
+        }).limit(4).exec();
 
         return findEvent.map((event) => event.toObject());
     }

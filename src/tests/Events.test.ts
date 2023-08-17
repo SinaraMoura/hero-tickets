@@ -8,17 +8,17 @@ const express = app.app;
 describe('Event test', () => {
     it('/POST Event', async () => {
         const event = {
-            title: 'Zé Neto e Cristiano',
-            price: [{ sector: 'Pista', amount: '50' }],
-            categories: ['Show'],
+            title: '`Pic Nick no Parque',
+            price: [{ sector: 'Pista', amount: '0' }],
+            categories: ['Festival'],
             description: 'Evento descrição',
             city: 'Brasília',
             location: {
-                latitude: '-15.8011241',
-                longitude: '-47.9065932',
+                latitude: '-19.8658659',
+                longitude: '-43.9737064',
             },
             coupons: [],
-            date: new Date('2023-08-15'),
+            date: new Date('2023-08-30'),
             participants: [],
         };
 
@@ -46,7 +46,7 @@ describe('Event test', () => {
     }, 1000000);
     it('/GET/:id  event by id', async () => {
         const response = await request(express).get(
-            '/events/64d7bc63ea782f7fad67d35c',
+            '/events/64d7de34553b7fc3426423f5',
         );
 
         if (response.error) {
@@ -77,9 +77,20 @@ describe('Event test', () => {
         expect(response.status).toBe(200);
         expect(response.body.length).toBeGreaterThan(0);
     });
+    it('/GET  all event ', async () => {
+        const response = await request(express).get('/events/main');
+        console.log("🚀 ~ file: Events.test.ts:82 ~ it ~ response[events/main]:", response.body);
+
+        if (response.error) {
+            console.log('🚀 ~ file: Events.test.ts:34 ~ it ~ error:', response.error);
+        }
+
+        expect(response.status).toBe(200);
+        // expect(response.body.length).toBeGreaterThan(0);
+    });
     it('/POST  event insert user', async () => {
         const response = await request(express)
-            .post('/events/64d7bc63ea782f7fad67d35c/participants')
+            .post('/events/64d7de34553b7fc3426423f5/participants')
             .send({
                 name: 'Sinara',
                 email: crypto.randomBytes(10).toString('hex') + '@teste.com',
@@ -106,15 +117,15 @@ const eventRepository = {
 };
 const eventUseCase = new EventUseCase(eventRepository);
 const event: Event = {
-    title: 'Henrique e Juliano',
+    title: 'Ana Castela',
     price: [{ sector: 'Pista', amount: '50' }],
     categories: ['Show'],
     formattedAddress: '',
     description: 'Evento descrição',
     city: 'Brasília',
     location: {
-        latitude: '-19.8658659',
-        longitude: '-43.9737064',
+        latitude: '-19.8658859',
+        longitude: '-43.1737064',
     },
     banner: 'banner.png',
     flyers: ['flyer1.png', 'flyer2.png'],
@@ -135,22 +146,29 @@ describe('Unit Test', () => {
     });
     it('should return an array of events by name', async () => {
         eventRepository.findEventsByName.mockResolvedValue([event]);
-        const result = await eventUseCase.findEventsByName('Henrique e Juliano');
+        const result = await eventUseCase.findEventsByName('"Zé Neto e Cristiano');
 
         expect(result).toEqual([event]);
         expect(eventRepository.findEventsByName).toHaveBeenCalledWith(
-            'Henrique e Juliano',
+            '"Zé Neto e Cristiano',
         );
     });
     it('should return a event by Id', async () => {
         eventRepository.findEventById.mockResolvedValueOnce(event);
         const result = await eventUseCase.findEventsById(
-            '64d7bc63ea782f7fad67d35c',
+            '64d7de34553b7fc3426423f5',
         );
 
         expect(result).toEqual(event);
         expect(eventRepository.findEventById).toHaveBeenCalledWith(
-            '64d7bc63ea782f7fad67d35c',
+            '64d7de34553b7fc3426423f5',
         );
+    });
+    it('should return all events', async () => {
+        eventRepository.findEventsMain.mockResolvedValue([event]);
+        const result = await eventUseCase.findEventsMain();
+        console.log("🚀 ~ file: Events.test.ts:159 ~ it ~ result:", result)
+
+        expect(result).toEqual([event]);
     });
 });
